@@ -1,5 +1,7 @@
 基于松灵NERO机械臂搭建的双臂仿人REACH任务 
+
 基于PPO的强化学习运动学逆解
+
 基于open_arm isaaclab搭建的rl训练架构
 
 first start:cd openarm_isaac_lab
