@@ -11,16 +11,16 @@ tensorboard：
 python -m tensorboard.main --logdir=logs
 
 nero训练：
-python /home/databeyond/agx_arm/openarm_isaac_lab/scripts/reinforcement_learning/rl_games/train.py \
+python /home/databeyond/agx_arm/nero_isaac_lab/scripts/reinforcement_learning/rl_games/train.py \
   --task Isaac-Reach-Nero-v0 --headless
   
 nero 回放：
-python /home/databeyond/agx_arm/openarm_isaac_lab/scripts/reinforcement_learning/rl_games/play.py \
+python /home/databeyond/agx_arm/nero_isaac_lab/scripts/reinforcement_learning/rl_games/play.py \
   --task Isaac-Reach-Nero-Play-v0 \
-  --checkpoint /home/databeyond/agx_arm/openarm_isaac_lab/logs/rl_games/nero_reach/2026-02-02_18-44-06/nn/nero_reach.pth \
+  --checkpoint /home/databeyond/agx_arm/nero_isaac_lab/logs/rl_games/nero_reach/2026-02-02_18-44-06/nn/nero_reach.pth \
   --num_envs 1
   
-python /home/databeyond/agx_arm/openarm_isaac_lab/scripts/reinforcement_learning/rl_games/play.py \
+python /home/databeyond/agx_arm/nero_isaac_lab/scripts/reinforcement_learning/rl_games/play.py \
   --task Isaac-Reach-Nero-Play-v0 \
   --num_envs 4
   
