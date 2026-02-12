@@ -1,0 +1,20 @@
+Metadata-Version: 2.4
+Name: bi_nero
+Version: 0.1.0
+Summary: Bi-Nero Isaac Lab integration
+Home-page: https://github.com/enactic/openarm_isaac_lab
+Author: Enactic, Inc.
+Author-email: "Enactic, Inc." <contact@enactic.com>
+Maintainer: Enactic, Inc.
+License-Expression: Apache-2.0
+Keywords: extension,isaaclab
+Classifier: Natural Language :: English
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Isaac Sim :: 4.5.0
+Classifier: Isaac Sim :: 5.0.0
+Requires-Python: >=3.10
+Dynamic: author
+Dynamic: home-page
+Dynamic: maintainer
+Dynamic: requires-python
