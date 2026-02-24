@@ -230,8 +230,198 @@ class ObservationsCfg:
             self.enable_corruption = True
             self.concatenate_terms = True
 
+    @configclass
+    class PolicyLeftCfg(ObsGroup):
+        """左臂局部观测，30D，仅供 left policy 使用（MAPPO 去中心化）。"""
+
+        left_keypoints_error_world = ObsTerm(
+            func=mdp.obs_keypoints_error_world,
+            params={
+                "asset_cfg": SceneEntityCfg("robot", body_names=MISSING),
+                "command_name": "left_ee_pose",
+                "keypoint_scale": 0.25,
+                "add_negative_axes": False,
+            },
+            noise=Unoise(n_min=-0.001, n_max=0.001),
+        )
+        left_joint_pos = ObsTerm(
+            func=mdp.obs_joint_pos_absolute,
+            params={
+                "asset_cfg": SceneEntityCfg("robot", joint_names=[
+                    "left_joint1", "left_joint2", "left_joint3", "left_joint4",
+                    "left_joint5", "left_joint6", "left_joint7",
+                ]),
+            },
+            noise=Unoise(n_min=-0.002, n_max=0.002),
+        )
+        left_joint_vel = ObsTerm(
+            func=mdp.obs_joint_vel,
+            params={
+                "asset_cfg": SceneEntityCfg("robot", joint_names=[
+                    "left_joint1", "left_joint2", "left_joint3", "left_joint4",
+                    "left_joint5", "left_joint6", "left_joint7",
+                ]),
+            },
+            noise=Unoise(n_min=-0.008, n_max=0.008),
+        )
+        left_joint_prev_pos = ObsTerm(
+            func=mdp.obs_joint_prev_pos,
+            params={
+                "action_name": "left_arm_action",
+                "asset_cfg": SceneEntityCfg("robot", joint_names=[
+                    "left_joint1", "left_joint2", "left_joint3", "left_joint4",
+                    "left_joint5", "left_joint6", "left_joint7",
+                ]),
+                "default_joint_pos": MISSING,
+            },
+        )
+
+        def __post_init__(self):
+            self.enable_corruption = True
+            self.concatenate_terms = True
+
+    @configclass
+    class PolicyRightCfg(ObsGroup):
+        """右臂局部观测，30D，仅供 right policy 使用（MAPPO 去中心化）。"""
+
+        right_keypoints_error_world = ObsTerm(
+            func=mdp.obs_keypoints_error_world,
+            params={
+                "asset_cfg": SceneEntityCfg("robot", body_names=MISSING),
+                "command_name": "right_ee_pose",
+                "keypoint_scale": 0.25,
+                "add_negative_axes": False,
+            },
+            noise=Unoise(n_min=-0.001, n_max=0.001),
+        )
+        right_joint_pos = ObsTerm(
+            func=mdp.obs_joint_pos_absolute,
+            params={
+                "asset_cfg": SceneEntityCfg("robot", joint_names=[
+                    "right_joint1", "right_joint2", "right_joint3", "right_joint4",
+                    "right_joint5", "right_joint6", "right_joint7",
+                ]),
+            },
+            noise=Unoise(n_min=-0.002, n_max=0.002),
+        )
+        right_joint_vel = ObsTerm(
+            func=mdp.obs_joint_vel,
+            params={
+                "asset_cfg": SceneEntityCfg("robot", joint_names=[
+                    "right_joint1", "right_joint2", "right_joint3", "right_joint4",
+                    "right_joint5", "right_joint6", "right_joint7",
+                ]),
+            },
+            noise=Unoise(n_min=-0.008, n_max=0.008),
+        )
+        right_joint_prev_pos = ObsTerm(
+            func=mdp.obs_joint_prev_pos,
+            params={
+                "action_name": "right_arm_action",
+                "asset_cfg": SceneEntityCfg("robot", joint_names=[
+                    "right_joint1", "right_joint2", "right_joint3", "right_joint4",
+                    "right_joint5", "right_joint6", "right_joint7",
+                ]),
+                "default_joint_pos": MISSING,
+            },
+        )
+
+        def __post_init__(self):
+            self.enable_corruption = True
+            self.concatenate_terms = True
+
+    @configclass
+    class CriticCfg(ObsGroup):
+        """集中化 critic 全局状态，60D = left(30) + right(30)，无噪声。"""
+
+        # --- left 部分 ---
+        left_keypoints_error_world = ObsTerm(
+            func=mdp.obs_keypoints_error_world,
+            params={
+                "asset_cfg": SceneEntityCfg("robot", body_names=MISSING),
+                "command_name": "left_ee_pose",
+                "keypoint_scale": 0.25,
+                "add_negative_axes": False,
+            },
+        )
+        left_joint_pos = ObsTerm(
+            func=mdp.obs_joint_pos_absolute,
+            params={
+                "asset_cfg": SceneEntityCfg("robot", joint_names=[
+                    "left_joint1", "left_joint2", "left_joint3", "left_joint4",
+                    "left_joint5", "left_joint6", "left_joint7",
+                ]),
+            },
+        )
+        left_joint_vel = ObsTerm(
+            func=mdp.obs_joint_vel,
+            params={
+                "asset_cfg": SceneEntityCfg("robot", joint_names=[
+                    "left_joint1", "left_joint2", "left_joint3", "left_joint4",
+                    "left_joint5", "left_joint6", "left_joint7",
+                ]),
+            },
+        )
+        left_joint_prev_pos = ObsTerm(
+            func=mdp.obs_joint_prev_pos,
+            params={
+                "action_name": "left_arm_action",
+                "asset_cfg": SceneEntityCfg("robot", joint_names=[
+                    "left_joint1", "left_joint2", "left_joint3", "left_joint4",
+                    "left_joint5", "left_joint6", "left_joint7",
+                ]),
+                "default_joint_pos": MISSING,
+            },
+        )
+        # --- right 部分 ---
+        right_keypoints_error_world = ObsTerm(
+            func=mdp.obs_keypoints_error_world,
+            params={
+                "asset_cfg": SceneEntityCfg("robot", body_names=MISSING),
+                "command_name": "right_ee_pose",
+                "keypoint_scale": 0.25,
+                "add_negative_axes": False,
+            },
+        )
+        right_joint_pos = ObsTerm(
+            func=mdp.obs_joint_pos_absolute,
+            params={
+                "asset_cfg": SceneEntityCfg("robot", joint_names=[
+                    "right_joint1", "right_joint2", "right_joint3", "right_joint4",
+                    "right_joint5", "right_joint6", "right_joint7",
+                ]),
+            },
+        )
+        right_joint_vel = ObsTerm(
+            func=mdp.obs_joint_vel,
+            params={
+                "asset_cfg": SceneEntityCfg("robot", joint_names=[
+                    "right_joint1", "right_joint2", "right_joint3", "right_joint4",
+                    "right_joint5", "right_joint6", "right_joint7",
+                ]),
+            },
+        )
+        right_joint_prev_pos = ObsTerm(
+            func=mdp.obs_joint_prev_pos,
+            params={
+                "action_name": "right_arm_action",
+                "asset_cfg": SceneEntityCfg("robot", joint_names=[
+                    "right_joint1", "right_joint2", "right_joint3", "right_joint4",
+                    "right_joint5", "right_joint6", "right_joint7",
+                ]),
+                "default_joint_pos": MISSING,
+            },
+        )
+
+        def __post_init__(self):
+            self.enable_corruption = False
+            self.concatenate_terms = True
+
     # observation groups
     policy: PolicyCfg = PolicyCfg()
+    policy_left:  PolicyLeftCfg  = PolicyLeftCfg()
+    policy_right: PolicyRightCfg = PolicyRightCfg()
+    critic:       CriticCfg      = CriticCfg()
 
 
 @configclass
