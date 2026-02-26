@@ -71,34 +71,66 @@ class ReachSceneCfg(InteractiveSceneCfg):
 class CommandsCfg:
     """Command terms for the MDP."""
 
-    left_ee_pose = mdp.UniformPoseCommandCfg(
+    left_ee_pose = mdp.DynamicSweepPoseCommandCfg(
         asset_name="robot",
         body_name=MISSING,
-        resampling_time_range=(4.0, 4.0),
+        resampling_time_range=(1e9, 1e9),   # 禁止父类自动重采样，由内部状态机控制
         debug_vis=True,
+        # ---- 姿态角设置（与原来保持一致）----
         ranges=mdp.UniformPoseCommandCfg.Ranges(
-            pos_x=(0.15, 0.3),
-            pos_y=(-0.25, -0.15),
-            pos_z=(0.3, 0.4),
-            roll=(-math.pi / 9, math.pi / 9),#恒定朝向 （-30 30)
-            pitch=(3 * math.pi / 2+math.pi/2, 3 * math.pi / 2+math.pi/2),#360
-            yaw=(math.pi+9.5 * math.pi / 10, 2*math.pi),#351-360
-        ),
-    )
-    right_ee_pose = mdp.UniformPoseCommandCfg(
-        asset_name="robot",
-        body_name=MISSING,
-        resampling_time_range=(4.0, 4.0),
-        debug_vis=True,
-        ranges=mdp.UniformPoseCommandCfg.Ranges(
-            pos_x=(0.15, 0.3),
-            pos_y=(0.15, 0.25),
-            pos_z=(0.3, 0.4),
+            pos_x=(-0.3, -0.1),               # 仅用于父类初始采样，实际被覆盖
+            pos_y=(-0.4, -0.05),              # 仅用于父类初始采样，实际被覆盖
+            pos_z=(0.40, 0.40),             # 仅用于父类初始采样，实际被覆盖
             roll=(-math.pi / 9, math.pi / 9),
-            pitch=(math.pi+3 * math.pi / 2 + math.pi/2, math.pi + 3 * math.pi / 2 + math.pi/2),
+            pitch=(3 * math.pi / 2 - math.pi / 2, 3 * math.pi / 2 - math.pi / 2),
+            yaw=(math.pi + 9.5 * math.pi / 10, 2 * math.pi),
+        ),
+        # ---- 动态运动参数 ----
+        velocity=0.25,          # m/s，Y 轴移动速度
+        start_pos_y=-0.05,        # Left 从 Y=0.0 出发
+        end_pos_y=-0.4,         # Left 到 Y=-0.3 后进入等待
+        fixed_pos_z=0.40,       # 动态目标固定 Z
+        pos_x_min=-0.3,         # 动态目标 X 随机范围
+        pos_x_max=-0.1,
+        # ---- place位置（不有动态目标时显示的固定目标）----
+        rest_pos_x=-0.2,        # Left place目标：左边副方位置
+        rest_pos_y=-0.15,
+        rest_pos_z=0.40,
+        # ---- 等待时间 ----
+        wait_time_min=0.5,
+        wait_time_max=2.0,
+    )
+
+    right_ee_pose = mdp.DynamicSweepPoseCommandCfg(
+        asset_name="robot",
+        body_name=MISSING,
+        resampling_time_range=(1e9, 1e9),   # 禁止父类自动重采样
+        debug_vis=True,
+        # ---- 姿态角设置（与原来保持一致）----
+        ranges=mdp.UniformPoseCommandCfg.Ranges(
+            pos_x=(-0.3, -0.1),
+            pos_y=(0.05, 0.4),
+            pos_z=(0.40, 0.40),
+            roll=(-math.pi / 9, math.pi / 9),
+            pitch=(math.pi + 3 * math.pi / 2 - math.pi / 2, math.pi + 3 * math.pi / 2 - math.pi / 2),
             yaw=(9.6 * math.pi / 10, 10.4 * math.pi / 10),
         ),
+        # ---- 动态运动参数 ----
+        velocity=0.25,          # m/s，Y 轴移动速度
+        start_pos_y=0.4,        # Right 从 Y=0.3 出发
+        end_pos_y=0.05,          # Right 到 Y=0.0 后进入等待
+        fixed_pos_z=0.40,       # 动态目标固定 Z
+        pos_x_min=-0.3,         # 动态目标 X 随机范围
+        pos_x_max=-0.1,
+        # ---- place位置（不有动态目标时显示的固定目标）----
+        rest_pos_x=-0.2,        # Right 休息目标：右边副方位置
+        rest_pos_y=0.15,
+        rest_pos_z=0.40,
+        # ---- 等待时间 ----
+        wait_time_min=0.5,
+        wait_time_max=2.0,
     )
+
 
 
 @configclass
@@ -119,29 +151,6 @@ class ObservationsCfg:
 
         - 左/右：关键点误差(世界) 9D、关节当前位置、速度、上一时刻位置
         """
-
-        # ----- 左臂：末端关键点(世界) 9D -----
-        # left_ee_keypoints_world = ObsTerm(
-        #     func=mdp.obs_ee_keypoints_world,
-        #     params={
-        #         "asset_cfg": SceneEntityCfg("robot", body_names=MISSING),
-        #         "command_name": "left_ee_pose",
-        #         "keypoint_scale": 0.25,
-        #         "add_negative_axes": False,
-        #     },
-        #     noise=Unoise(n_min=-0.001, n_max=0.001),
-        # )
-        # left_target_keypoints_world = ObsTerm(
-        #     func=mdp.obs_target_keypoints_world,
-        #     params={
-        #         "asset_cfg": SceneEntityCfg("robot", body_names=MISSING),
-        #         "command_name": "left_ee_pose",
-        #         "keypoint_scale": 0.25,
-        #         "add_negative_axes": False,
-        #     },
-        #     noise=Unoise(n_min=-0.001, n_max=0.001),
-        # )
-        # 关键点误差(世界) 9D：让策略显式知道每个轴向差距
         left_keypoints_error_world = ObsTerm(
             func=mdp.obs_keypoints_error_world,
             params={
@@ -150,18 +159,6 @@ class ObservationsCfg:
                 "keypoint_scale": 0.25,
                 "add_negative_axes": False,
             },
-            noise=Unoise(n_min=-0.001, n_max=0.001),
-        )
-        # ----- 右臂：关键点误差 9D + 关节状态 -----
-        right_keypoints_error_world = ObsTerm(
-            func=mdp.obs_keypoints_error_world,
-            params={
-                "asset_cfg": SceneEntityCfg("robot", body_names=MISSING),
-                "command_name": "right_ee_pose",
-                "keypoint_scale": 0.25,
-                "add_negative_axes": False,
-            },
-            noise=Unoise(n_min=-0.001, n_max=0.001),
         )
         left_joint_pos = ObsTerm(
             func=mdp.obs_joint_pos_absolute,
@@ -192,6 +189,16 @@ class ObservationsCfg:
                     "left_joint5", "left_joint6", "left_joint7",
                 ]),
                 "default_joint_pos": MISSING,
+            },
+        )
+        # ----- 右臂：关键点误差 9D + 关节状态 -----
+        right_keypoints_error_world = ObsTerm(
+            func=mdp.obs_keypoints_error_world,
+            params={
+                "asset_cfg": SceneEntityCfg("robot", body_names=MISSING),
+                "command_name": "right_ee_pose",
+                "keypoint_scale": 0.25,
+                "add_negative_axes": False,
             },
         )
         right_joint_pos = ObsTerm(
@@ -332,7 +339,7 @@ class ObservationsCfg:
 
     @configclass
     class CriticCfg(ObsGroup):
-        """集中化 critic 全局状态，60D = left(30) + right(30)，无噪声。"""
+        """Centralized critic global state, 60D = left(30) + right(30)."""
 
         # --- left 部分 ---
         left_keypoints_error_world = ObsTerm(
@@ -352,6 +359,7 @@ class ObservationsCfg:
                     "left_joint5", "left_joint6", "left_joint7",
                 ]),
             },
+            noise=Unoise(n_min=-0.002, n_max=0.002),
         )
         left_joint_vel = ObsTerm(
             func=mdp.obs_joint_vel,
@@ -361,6 +369,7 @@ class ObservationsCfg:
                     "left_joint5", "left_joint6", "left_joint7",
                 ]),
             },
+            noise=Unoise(n_min=-0.002, n_max=0.002),
         )
         left_joint_prev_pos = ObsTerm(
             func=mdp.obs_joint_prev_pos,
@@ -391,6 +400,7 @@ class ObservationsCfg:
                     "right_joint5", "right_joint6", "right_joint7",
                 ]),
             },
+            noise=Unoise(n_min=-0.002, n_max=0.002),
         )
         right_joint_vel = ObsTerm(
             func=mdp.obs_joint_vel,
@@ -400,6 +410,7 @@ class ObservationsCfg:
                     "right_joint5", "right_joint6", "right_joint7",
                 ]),
             },
+            noise=Unoise(n_min=-0.002, n_max=0.002),
         )
         right_joint_prev_pos = ObsTerm(
             func=mdp.obs_joint_prev_pos,
@@ -414,7 +425,7 @@ class ObservationsCfg:
         )
 
         def __post_init__(self):
-            self.enable_corruption = False
+            self.enable_corruption = True
             self.concatenate_terms = True
 
     # observation groups
@@ -437,6 +448,38 @@ class EventCfg:
         },
     )
 
+    randomize_rigid_body_mass = EventTerm(
+        func=mdp.randomize_rigid_body_mass,
+        mode="reset",
+        params={
+            "asset_cfg": SceneEntityCfg("robot"),
+            "mass_distribution_params": (0.8, 1.2),
+            "operation": "scale",
+        },
+    )
+
+    randomize_joint_parameters = EventTerm(
+        func=mdp.randomize_joint_parameters,
+        mode="reset",
+        params={
+            "asset_cfg": SceneEntityCfg("robot", joint_names=".*"),
+            "friction_distribution_params": (0.8, 1.2),
+            "operation": "scale",
+        },
+    )
+
+    # randomize_actuator_gains = EventTerm(
+    #     func=mdp.randomize_actuator_gains,
+    #     mode="reset",
+    #     params={
+    #         "asset_cfg": SceneEntityCfg("robot", joint_names=".*"),
+    #         "stiffness_distribution_params": (0.9, 1.1),
+    #         "damping_distribution_params": (0.9, 1.1),
+    #         "operation": "scale",
+    #     },
+    # )
+#先暂用
+
 
 @configclass
 class RewardsCfg:
@@ -447,7 +490,7 @@ class RewardsCfg:
     # keypoint_scale：关键点沿轴长度(m)，即末端+scale*轴方向的点，非精度阈值
     left_keypoint_error_x = RewTerm(
         func=mdp.keypoint_command_error_axis,
-        weight=-0.65,
+        weight=-0.7,
         params={
             "asset_cfg": SceneEntityCfg("robot", body_names=MISSING),
             "command_name": "left_ee_pose",
@@ -459,7 +502,7 @@ class RewardsCfg:
     )
     left_keypoint_error_y = RewTerm(
         func=mdp.keypoint_command_error_axis,
-        weight=-0.6,
+        weight=-0.65,
         params={
             "asset_cfg": SceneEntityCfg("robot", body_names=MISSING),
             "command_name": "left_ee_pose",
@@ -471,7 +514,7 @@ class RewardsCfg:
     )
     left_keypoint_error_z = RewTerm(
         func=mdp.keypoint_command_error_axis,
-        weight=-0.65,
+        weight=-0.7,
         params={
             "asset_cfg": SceneEntityCfg("robot", body_names=MISSING),
             "command_name": "left_ee_pose",
@@ -485,7 +528,7 @@ class RewardsCfg:
     # 轴向 tanh：std 调小，近距离梯度才够大，否则会停在“恒定距离”不再靠近
     left_keypoint_tracking_tanh_x = RewTerm(
         func=mdp.keypoint_command_error_axis_tanh,
-        weight=0.25,
+        weight=0.3,
         params={
             "asset_cfg": SceneEntityCfg("robot", body_names=MISSING),
             "std": 0.05,  
@@ -540,7 +583,7 @@ class RewardsCfg:
     # ----- 右臂：轴向惩罚 + tanh + 稀疏 + 关节速度 -----
     right_keypoint_error_x = RewTerm(
         func=mdp.keypoint_command_error_axis,
-        weight=-0.65,
+        weight=-0.7,
         params={
             "asset_cfg": SceneEntityCfg("robot", body_names=MISSING),
             "command_name": "right_ee_pose",
@@ -564,7 +607,7 @@ class RewardsCfg:
     )
     right_keypoint_error_z = RewTerm(
         func=mdp.keypoint_command_error_axis,
-        weight=-0.6,
+        weight=-0.7,
         params={
             "asset_cfg": SceneEntityCfg("robot", body_names=MISSING),
             "command_name": "right_ee_pose",
@@ -589,7 +632,7 @@ class RewardsCfg:
     )
     right_keypoint_tracking_tanh_y = RewTerm(
         func=mdp.keypoint_command_error_axis_tanh,
-        weight=0.3,
+        weight=0.25,
         params={
             "asset_cfg": SceneEntityCfg("robot", body_names=MISSING),
             "std": 0.05,
@@ -615,7 +658,7 @@ class RewardsCfg:
     )
     right_reach_success_sparse = RewTerm(
         func=mdp.reach_success_sparse_keypoints,
-        weight=3.0,
+        weight=2.0,
         params={
             "asset_cfg": SceneEntityCfg("robot", body_names=MISSING),
             "command_name": "right_ee_pose",
@@ -663,7 +706,7 @@ class CurriculumCfg:
 
     action_rate = CurrTerm(
         func=mdp.modify_reward_weight,
-        params={"term_name": "action_rate", "weight": -0.1, "num_steps": 3000},
+        params={"term_name": "action_rate", "weight": -0.01, "num_steps": 4000},
     )
     left_joint_vel = CurrTerm(
         func=mdp.modify_reward_weight,
@@ -672,6 +715,10 @@ class CurriculumCfg:
     right_joint_vel = CurrTerm(
         func=mdp.modify_reward_weight,
         params={"term_name": "right_joint_vel", "weight": -0.001, "num_steps": 4500},
+    )
+    action_rate = CurrTerm(
+        func=mdp.modify_reward_weight,
+        params={"term_name": "action_rate", "weight": -0.1, "num_steps": 10000},
     )
 
 ##
@@ -701,6 +748,7 @@ class ReachEnvCfg(ManagerBasedRLEnvCfg):
         self.decimation = 2  # 30Hz 控制，平衡精度与平滑（60Hz易抖动）
         self.sim.render_interval = self.decimation
         self.episode_length_s = 24.0
-        self.viewer.eye = (3.5, 3.5, 3.5)
+        self.viewer.eye = (1.0, 3.5, 3.5)
+        # self.viewer.eye = (0.0, -2.5, 2.0)
         # simulation settings
         self.sim.dt = 1.0 / 60.0

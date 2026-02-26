@@ -49,18 +49,18 @@ class BiNeroReachEnvCfg(ReachEnvCfg):
             prim_path="{ENV_REGEX_NS}/Robot",
             init_state=ArticulationCfg.InitialStateCfg(
                 joint_pos={
-                    "left_joint1": 1.6,
-                    "left_joint2": 1.2,
-                    "left_joint3": 0.52,
-                    "left_joint4": 0.52,
-                    "left_joint5": -0.6,
+                    "left_joint1": 1.0,
+                    "left_joint2": 1.0,
+                    "left_joint3": -1.0,
+                    "left_joint4": 1.5,
+                    "left_joint5": 1.0,
                     "left_joint6": 0.0,
                     "left_joint7": 0.0,
-                    "right_joint1": -1.6,
-                    "right_joint2": 1.2,
-                    "right_joint3": -0.52,
-                    "right_joint4": 0.52,
-                    "right_joint5": 0.6,
+                    "right_joint1": -1.0,
+                    "right_joint2": 1.0,
+                    "right_joint3": 1.0,
+                    "right_joint4": 1.5,
+                    "right_joint5": -1.0,
                     "right_joint6": 0.0,
                     "right_joint7": 0.0,
                 },  # Close the gripper
@@ -95,10 +95,10 @@ class BiNeroReachEnvCfg(ReachEnvCfg):
 
         # 关节上一时刻位置：默认关节角（与 init_state 一致）
         self.observations.policy.left_joint_prev_pos.params["default_joint_pos"] = [
-            1.6, 1.2, 0.52, 0.52, -0.6, 0.0, 0.0,
+            1.0, 1.0, -1.0, 1.5, 1.0, 0.0, 0.0,
         ]
         self.observations.policy.right_joint_prev_pos.params["default_joint_pos"] = [
-            -1.6, 1.2, -0.52, 0.52, 0.6, 0.0, 0.0,
+            -1.0, 1.0, 1.0, 1.5, -1.0, 0.0, 0.0,
         ]
 
         # override actions

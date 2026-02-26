@@ -85,7 +85,7 @@ from bi_nero.tasks.manager_based.bimanual.reach.marl_wrapper import BimanualMARL
 # 超参
 # ------------------------------------------------------------------ #
 ROLLOUTS       = 24
-LEARNING_RATE  = 1e-4
+LEARNING_RATE  = 3e-4
 HIDDEN_DIMS    = [256, 256, 128]
 OBS_LEFT_DIM   = 30
 OBS_RIGHT_DIM  = 30
@@ -233,7 +233,7 @@ def main():
         "value_preprocessor":              RunningStandardScaler,
         "value_preprocessor_kwargs":       {"size": 1, "device": device},
         # 增大熵系数：防止策略过早收敛到次优的局部极值
-        "entropy_loss_scale":    0.01,
+        "entropy_loss_scale":    0.02,
         # 提高学习率：加快从好轨迹中学习的速度
         "learning_rate":         3e-4,
         "experiment": {

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""MAPPO 专用环境配置：去中心化 policy obs（30D×2）+ 集中化 critic 状态（60D），无动作延迟。"""
+"""MAPPO 专用环境配置：去中心化 policy obs（30D×2）+ 集中化 critic 状态（60D），可选动作延迟（sim2real）。"""
 
 from isaaclab.utils import configclass
 
@@ -24,11 +24,11 @@ class BiNeroReachMAPPOEnvCfg(BiNeroReachEnvCfg):
     """MAPPO 专用配置。
 
     在 BiNeroReachEnvCfg 基础上：
-    - 关闭动作延迟（纯仿真训练）
+    - 动作延迟 3ms，用于 sim2real 训练时模拟命令延迟
     - 覆盖三个新 ObsGroup 的 body_names / default_joint_pos
     """
 
-    action_delay_seconds: float = 0.0  # 纯仿真，不模拟命令延迟
+    action_delay_seconds: float = 0.003  # 3ms，模拟真实机器人命令延迟
 
     def __post_init__(self):
         super().__post_init__()  # 完成 BiNeroReachEnvCfg 的基础覆盖（actions, commands, rewards 等）
@@ -39,7 +39,7 @@ class BiNeroReachMAPPOEnvCfg(BiNeroReachEnvCfg):
         obs_pl = self.observations.policy_left
         obs_pl.left_keypoints_error_world.params["asset_cfg"].body_names = ["left_link7"]
         obs_pl.left_joint_prev_pos.params["default_joint_pos"] = [
-            1.6, 1.2, 0.52, 0.52, -0.6, 0.0, 0.0,
+            1.0, 1.0, -1.0, 1.5, 1.0, 0.0, 0.0,
         ]
 
         # ----------------------------------------------------------------
@@ -48,7 +48,7 @@ class BiNeroReachMAPPOEnvCfg(BiNeroReachEnvCfg):
         obs_pr = self.observations.policy_right
         obs_pr.right_keypoints_error_world.params["asset_cfg"].body_names = ["right_link7"]
         obs_pr.right_joint_prev_pos.params["default_joint_pos"] = [
-            -1.6, 1.2, -0.52, 0.52, 0.6, 0.0, 0.0,
+            -1.0, 1.0, 1.0, 1.5, -1.0, 0.0, 0.0,
         ]
 
         # ----------------------------------------------------------------
@@ -58,8 +58,8 @@ class BiNeroReachMAPPOEnvCfg(BiNeroReachEnvCfg):
         obs_c.left_keypoints_error_world.params["asset_cfg"].body_names  = ["left_link7"]
         obs_c.right_keypoints_error_world.params["asset_cfg"].body_names = ["right_link7"]
         obs_c.left_joint_prev_pos.params["default_joint_pos"] = [
-            1.6, 1.2, 0.52, 0.52, -0.6, 0.0, 0.0,
+            1.0, 1.0, -1.0, 1.5, 1.0, 0.0, 0.0,
         ]
         obs_c.right_joint_prev_pos.params["default_joint_pos"] = [
-            -1.6, 1.2, -0.52, 0.52, 0.6, 0.0, 0.0,
+            -1.0, 1.0, 1.0, 1.5, -1.0, 0.0, 0.0,
         ]
