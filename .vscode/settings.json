@@ -1,0 +1,10 @@
+{
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}/external"
+    ],
+    "python.autoComplete.extraPaths": [
+        "${workspaceFolder}/external"
+    ],
+    "python.analysis.indexing": true,
+    "python.analysis.userFileIndexingLimit": 2000
+}

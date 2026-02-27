@@ -102,7 +102,7 @@ class BiNeroReachEnvCfg(ReachEnvCfg):
         ]
 
         # override actions
-        self.actions.left_arm_action = mdp.JointPositionActionCfg(
+        self.actions.left_arm_action = mdp.EMAJointPositionActionCfg(
             asset_name="robot",
             joint_names=[
                 "left_joint1", "left_joint2", "left_joint3", "left_joint4",
@@ -110,8 +110,9 @@ class BiNeroReachEnvCfg(ReachEnvCfg):
             ],
             scale=0.5,
             use_default_offset=True,
+            alpha=0.1,  # EMA 平滑因子，越小越平滑
         )
-        self.actions.right_arm_action = mdp.JointPositionActionCfg(
+        self.actions.right_arm_action = mdp.EMAJointPositionActionCfg(
             asset_name="robot",
             joint_names=[
                 "right_joint1", "right_joint2", "right_joint3", "right_joint4",
@@ -119,6 +120,7 @@ class BiNeroReachEnvCfg(ReachEnvCfg):
             ],
             scale=0.5,
             use_default_offset=True,
+            alpha=0.1,  # EMA 平滑因子
         )
 
         # override command generator body（末端连杆名与 USD 一致）

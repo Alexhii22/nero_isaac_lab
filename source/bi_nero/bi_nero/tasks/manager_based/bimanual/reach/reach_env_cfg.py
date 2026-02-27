@@ -13,11 +13,12 @@
 # limitations under the License.
 
 from dataclasses import MISSING
+from turtle import right
 
 import isaaclab.sim as sim_utils
 from isaaclab.actuators import ImplicitActuatorCfg
 from isaaclab.assets.articulation import ArticulationCfg
-from isaaclab.assets import ArticulationCfg, AssetBaseCfg
+from isaaclab.assets import ArticulationCfg, AssetBaseCfg, RigidObjectCfg
 from isaaclab.envs import ManagerBasedRLEnvCfg
 from isaaclab.managers import ActionTermCfg as ActionTerm
 from isaaclab.managers import CurriculumTermCfg as CurrTerm
@@ -31,6 +32,7 @@ from isaaclab.scene import InteractiveSceneCfg
 from isaaclab.utils import configclass
 from isaaclab.utils.assets import ISAAC_NUCLEUS_DIR
 from isaaclab.utils.noise import AdditiveUniformNoiseCfg as Unoise
+from isaaclab.sensors import ContactSensorCfg
 
 from . import mdp
 
@@ -61,6 +63,115 @@ class ReachSceneCfg(InteractiveSceneCfg):
         spawn=sim_utils.DomeLightCfg(color=(0.75, 0.75, 0.75), intensity=2500.0),
     )
 
+    # 引导长方体 (Left)
+    left_guide_cuboid_1 = RigidObjectCfg(
+        prim_path="{ENV_REGEX_NS}/left_guide_cuboid_1",
+        init_state=RigidObjectCfg.InitialStateCfg(pos=(0.2, 0.0, 0.10)),
+        spawn=sim_utils.CuboidCfg(
+            size=(0.2, 0.02, 0.25),
+            visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 1.0, 0.0), opacity=1.0),
+            rigid_props=sim_utils.RigidBodyPropertiesCfg(
+                disable_gravity=True,
+                kinematic_enabled=True,
+            ),
+            collision_props=None,
+        ),
+        debug_vis=True,
+    )
+    left_guide_cuboid_2 = RigidObjectCfg(
+        prim_path="{ENV_REGEX_NS}/left_guide_cuboid_2",
+        init_state=RigidObjectCfg.InitialStateCfg(pos=(0.2, 0.0, 0.10)),
+        spawn=sim_utils.CuboidCfg(
+            size=(0.2, 0.02, 0.25),
+            visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 1.0, 0.0), opacity=1.0),
+            rigid_props=sim_utils.RigidBodyPropertiesCfg(
+                disable_gravity=True,
+                kinematic_enabled=True,
+            ),
+            collision_props=None,
+        ),
+        debug_vis=True,
+    )
+    left_guide_cuboid_3 = RigidObjectCfg(
+        prim_path="{ENV_REGEX_NS}/left_guide_cuboid_3",
+        init_state=RigidObjectCfg.InitialStateCfg(pos=(0.2, 0.0, 0.10)),
+        spawn=sim_utils.CuboidCfg(
+            size=(0.02, 0.2, 0.25),
+            visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 1.0, 0.0), opacity=1.0),
+            rigid_props=sim_utils.RigidBodyPropertiesCfg(
+                disable_gravity=True,
+            ),
+            collision_props=None,
+        ),
+    )
+    left_guide_cuboid_4 = RigidObjectCfg(
+        prim_path="{ENV_REGEX_NS}/left_guide_cuboid_4",
+        init_state=RigidObjectCfg.InitialStateCfg(pos=(0.2, 0.0, 0.10)),
+        spawn=sim_utils.CuboidCfg(
+            size=(0.02, 0.2, 0.25),
+            visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 1.0, 0.0), opacity=1.0),
+            rigid_props=sim_utils.RigidBodyPropertiesCfg(
+                disable_gravity=True,
+            ),
+            collision_props=None,
+        ),
+    )
+
+    # 引导长方体 (Right)
+    right_guide_cuboid_1 = RigidObjectCfg(
+        prim_path="{ENV_REGEX_NS}/right_guide_cuboid_1",
+        init_state=RigidObjectCfg.InitialStateCfg(pos=(0.2, 0.0, 0.1)),
+        spawn=sim_utils.CuboidCfg(
+            size=(0.2, 0.02, 0.25),
+            visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 1.0), opacity=1.0),
+            rigid_props=sim_utils.RigidBodyPropertiesCfg(
+                disable_gravity=True,
+                kinematic_enabled=True,
+            ),
+            collision_props=None,
+        ),
+        debug_vis=True,
+    )
+    right_guide_cuboid_2 = RigidObjectCfg(
+        prim_path="{ENV_REGEX_NS}/right_guide_cuboid_2",
+        init_state=RigidObjectCfg.InitialStateCfg(pos=(0.2, 0.0, 0.1)),
+        spawn=sim_utils.CuboidCfg(
+            size=(0.2, 0.02, 0.25),
+            visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 1.0), opacity=1.0),
+            rigid_props=sim_utils.RigidBodyPropertiesCfg(
+                disable_gravity=True,
+                kinematic_enabled=True,
+            ),
+            collision_props=None,
+        ),
+        debug_vis=True,
+    )
+    right_guide_cuboid_3 = RigidObjectCfg(
+        prim_path="{ENV_REGEX_NS}/right_guide_cuboid_3",
+        init_state=RigidObjectCfg.InitialStateCfg(pos=(0.2, 0.0, 0.1)),
+        spawn=sim_utils.CuboidCfg(
+            size=(0.02, 0.2, 0.25),
+            visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 1.0), opacity=1.0),
+            rigid_props=sim_utils.RigidBodyPropertiesCfg(
+                disable_gravity=True,
+            ),
+            collision_props=None,
+        ),
+    )
+    right_guide_cuboid_4 = RigidObjectCfg(
+        prim_path="{ENV_REGEX_NS}/right_guide_cuboid_4",
+        init_state=RigidObjectCfg.InitialStateCfg(pos=(0.2, 0.0, 0.1)),
+        spawn=sim_utils.CuboidCfg(
+            size=(0.02, 0.2, 0.25),
+            visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 1.0), opacity=1.0),
+            rigid_props=sim_utils.RigidBodyPropertiesCfg(
+                disable_gravity=True,
+            ),
+            collision_props=None,
+        ),
+    )
+
+
 
 ##
 # MDP settings
@@ -86,18 +197,19 @@ class CommandsCfg:
             yaw=(math.pi + 9.5 * math.pi / 10, 2 * math.pi),
         ),
         # ---- 动态运动参数 ----
-        velocity=0.25,          # m/s，Y 轴移动速度
+        velocity=0.20,          # m/s，Y 轴移动速度
+        cuboid_offset=0.1,      # 引导长方体离目标的距离 (m)  动态障碍物
         start_pos_y=-0.05,        # Left 从 Y=0.0 出发
         end_pos_y=-0.4,         # Left 到 Y=-0.3 后进入等待
         fixed_pos_z=0.40,       # 动态目标固定 Z
         pos_x_min=-0.3,         # 动态目标 X 随机范围
         pos_x_max=-0.1,
         # ---- place位置（不有动态目标时显示的固定目标）----
-        rest_pos_x=-0.2,        # Left place目标：左边副方位置
-        rest_pos_y=-0.15,
-        rest_pos_z=0.40,
+        rest_pos_x=-0.05,        # Left place目标：左边副方位置
+        rest_pos_y=-0.60,
+        rest_pos_z=0.70,
         # ---- 等待时间 ----
-        wait_time_min=0.5,
+        wait_time_min=1.0,
         wait_time_max=2.0,
     )
 
@@ -116,18 +228,19 @@ class CommandsCfg:
             yaw=(9.6 * math.pi / 10, 10.4 * math.pi / 10),
         ),
         # ---- 动态运动参数 ----
-        velocity=0.25,          # m/s，Y 轴移动速度
+        velocity=0.20,          # m/s，Y 轴移动速度
+        cuboid_offset=0.1,      # 引导长方体离目标的距离 (m)
         start_pos_y=0.4,        # Right 从 Y=0.3 出发
         end_pos_y=0.05,          # Right 到 Y=0.0 后进入等待
         fixed_pos_z=0.40,       # 动态目标固定 Z
         pos_x_min=-0.3,         # 动态目标 X 随机范围
         pos_x_max=-0.1,
         # ---- place位置（不有动态目标时显示的固定目标）----
-        rest_pos_x=-0.2,        # Right 休息目标：右边副方位置
-        rest_pos_y=0.15,
-        rest_pos_z=0.40,
+        rest_pos_x=-0.05,        # Right 休息目标：右边副方位置
+        rest_pos_y=0.60,
+        rest_pos_z=0.70,
         # ---- 等待时间 ----
-        wait_time_min=0.5,
+        wait_time_min=1.0,
         wait_time_max=2.0,
     )
 
@@ -249,7 +362,6 @@ class ObservationsCfg:
                 "keypoint_scale": 0.25,
                 "add_negative_axes": False,
             },
-            noise=Unoise(n_min=-0.001, n_max=0.001),
         )
         left_joint_pos = ObsTerm(
             func=mdp.obs_joint_pos_absolute,
@@ -299,7 +411,6 @@ class ObservationsCfg:
                 "keypoint_scale": 0.25,
                 "add_negative_axes": False,
             },
-            noise=Unoise(n_min=-0.001, n_max=0.001),
         )
         right_joint_pos = ObsTerm(
             func=mdp.obs_joint_pos_absolute,
@@ -578,7 +689,7 @@ class RewardsCfg:
             "add_cube_center_kp": False,
             "add_negative_axes": False,
         },
-    )
+    )   
 
     # ----- 右臂：轴向惩罚 + tanh + 稀疏 + 关节速度 -----
     right_keypoint_error_x = RewTerm(
@@ -595,7 +706,7 @@ class RewardsCfg:
     )
     right_keypoint_error_y = RewTerm(
         func=mdp.keypoint_command_error_axis,
-        weight=-0.6,
+        weight=-0.65,
         params={
             "asset_cfg": SceneEntityCfg("robot", body_names=MISSING),
             "command_name": "right_ee_pose",
@@ -692,6 +803,48 @@ class RewardsCfg:
         },
     )
 
+    # 虚拟区域惩罚：数学检测机械臂关节是否进入引导区域
+    left_undesired_region_y = RewTerm(
+        func=mdp.undesired_region_penalty,
+        weight=0.0,
+        params={
+            "asset_cfg": SceneEntityCfg("robot", body_names="left_link7"),
+            "region_asset_names": ["left_guide_cuboid_1", "left_guide_cuboid_2"],
+            "size": (0.2, 0.02, 0.25),
+            "command_name": "left_ee_pose",
+        },
+    )
+    left_undesired_region_x = RewTerm(
+        func=mdp.undesired_region_penalty,
+        weight=0.0,
+        params={
+            "asset_cfg": SceneEntityCfg("robot", body_names="left_link7"),
+            "region_asset_names": ["left_guide_cuboid_3", "left_guide_cuboid_4"],
+            "size": (0.02, 0.2, 0.25),
+            "command_name": "left_ee_pose",
+        },
+    )
+    right_undesired_region_y = RewTerm(
+        func=mdp.undesired_region_penalty,
+        weight=0.0,
+        params={
+            "asset_cfg": SceneEntityCfg("robot", body_names="right_link7"),
+            "region_asset_names": ["right_guide_cuboid_1", "right_guide_cuboid_2"],
+            "size": (0.2, 0.02, 0.25),
+            "command_name": "right_ee_pose",
+        },
+    )
+    right_undesired_region_x = RewTerm(
+        func=mdp.undesired_region_penalty,
+        weight=0.0,
+        params={
+            "asset_cfg": SceneEntityCfg("robot", body_names="right_link7"),
+            "region_asset_names": ["right_guide_cuboid_3", "right_guide_cuboid_4"],
+            "size": (0.02, 0.2, 0.25),
+            "command_name": "right_ee_pose",
+        },
+    )
+
 
 @configclass
 class TerminationsCfg:
@@ -719,6 +872,32 @@ class CurriculumCfg:
     action_rate = CurrTerm(
         func=mdp.modify_reward_weight,
         params={"term_name": "action_rate", "weight": -0.1, "num_steps": 10000},
+    )
+    left_reach_success_sparse = CurrTerm(
+        func=mdp.modify_reward_weight,
+        params={"term_name": "left_reach_success_sparse", "weight": 5.0, "num_steps": 10000}
+    )
+    right_reach_success_sparse = CurrTerm(
+        func=mdp.modify_reward_weight,
+        params={"term_name": "right_reach_success_sparse", "weight": 5.0, "num_steps": 10000}
+    )
+
+    # 引导区课程：前 5000 步线性增加到目标权重
+    left_undesired_region_y = CurrTerm(
+        func=mdp.modify_reward_weight,
+        params={"term_name": "left_undesired_region_y", "weight": -5000.0, "num_steps": 20000},
+    )
+    left_undesired_region_x = CurrTerm(
+        func=mdp.modify_reward_weight,
+        params={"term_name": "left_undesired_region_x", "weight": -5000.0, "num_steps": 20000},
+    )
+    right_undesired_region_y = CurrTerm(
+        func=mdp.modify_reward_weight,
+        params={"term_name": "right_undesired_region_y", "weight": -5000.0, "num_steps": 20000},
+    )
+    right_undesired_region_x = CurrTerm(
+        func=mdp.modify_reward_weight,
+        params={"term_name": "right_undesired_region_x", "weight": -5000.0, "num_steps": 20000},
     )
 
 ##

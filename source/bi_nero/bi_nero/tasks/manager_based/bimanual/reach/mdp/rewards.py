@@ -302,3 +302,50 @@ def keypoint_command_error_tanh(
         add_negative_axes=add_negative_axes,
     )
     return 1.0 - torch.tanh(d / std)
+def undesired_region_penalty(
+    env: ManagerBasedRLEnv,
+    asset_cfg: SceneEntityCfg,
+    region_asset_names: list[str],
+    size: tuple[float, float, float],
+    command_name: str,
+) -> torch.Tensor:
+    """数学化检测机械臂是否进入了虚拟感应区（仅在运动阶段生效）。
+    
+    OBB 逻辑：切换至长方体局部系，检查重叠。
+    """
+    from isaaclab.assets import Articulation
+    from isaaclab.utils.math import subtract_frame_transforms
+    
+    # 获取命令处理器，检查是否处于 moving 状态
+    command_term = env.command_manager.get_term(command_name)
+    is_moving = getattr(command_term, "is_moving", None)
+    
+    # 如果没在运动，或者无法获取状态，则不扣分
+    if is_moving is None:
+        return torch.zeros(env.num_envs, device=env.device)
+    
+    robot: Articulation = env.scene[asset_cfg.name]
+    body_pos_w = robot.data.body_pos_w[:, asset_cfg.body_ids, :]
+    num_bodies = body_pos_w.shape[1]
+    
+    total_violations = torch.zeros(env.num_envs, device=env.device)
+    half_extents = torch.tensor(size, device=env.device) / 2.0
+    
+    for region_name in region_asset_names:
+        region_asset: RigidObject = env.scene[region_name]
+        region_pos_w = region_asset.data.root_pos_w
+        region_quat_w = region_asset.data.root_quat_w
+        
+        for b_idx in range(num_bodies):
+            curr_body_pos_w = body_pos_w[:, b_idx, :]
+            # 如果该环境处于 waiting 状态，跳过检测（设置惩罚为0）
+            local_pos, _ = subtract_frame_transforms(
+                region_pos_w, region_quat_w, curr_body_pos_w, 
+                torch.tensor([1.0, 0, 0, 0], device=env.device).repeat(env.num_envs, 1)
+            )
+            
+            inside = (local_pos.abs() < half_extents).all(dim=-1)
+            # 只有处于 is_moving 的环境才计入处罚
+            total_violations += (inside & is_moving).float()
+            
+    return total_violations

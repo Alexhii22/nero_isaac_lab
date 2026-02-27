@@ -28,7 +28,7 @@ class BiNeroReachMAPPOEnvCfg(BiNeroReachEnvCfg):
     - 覆盖三个新 ObsGroup 的 body_names / default_joint_pos
     """
 
-    action_delay_seconds: float = 0.003  # 3ms，模拟真实机器人命令延迟
+    action_delay_seconds: float = 0.008  # 3ms，模拟真实机器人命令延迟
 
     def __post_init__(self):
         super().__post_init__()  # 完成 BiNeroReachEnvCfg 的基础覆盖（actions, commands, rewards 等）

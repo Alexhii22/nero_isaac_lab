@@ -27,6 +27,7 @@ NERO_USD_PATH = os.path.join(PROJECT_ROOT, "agx_arm/bi_nero_description/urdf/bi_
 BI_NERO_CFG = ArticulationCfg(
     spawn=sim_utils.UsdFileCfg(
         usd_path=NERO_USD_PATH,
+        activate_contact_sensors=True,
         rigid_props=sim_utils.RigidBodyPropertiesCfg(
             disable_gravity=False,
             max_depenetration_velocity=5.0,
@@ -63,8 +64,8 @@ BI_NERO_CFG = ArticulationCfg(
                 "left_joint[1-7]": 40.0,
                 "right_joint[1-7]": 40.0,
             },
-            stiffness=90.0,#P值 刚度 越大 → 越“硬”，越想马上到目标 越小 → 越“软”，动作慢但稳定
-            damping=60.0,#抑制速度，防止震荡
+            stiffness=100.0,#P值 刚度 越大 → 越“硬”，越想马上到目标 越小 → 越“软”，动作慢但稳定
+            damping=80.0,#抑制速度，防止震荡
         ),
     },
     soft_joint_pos_limit_factor=1.0,#完全使用URDF限位
@@ -74,7 +75,7 @@ BI_NERO_CFG = ArticulationCfg(
 
 BI_NERO_HIGH_PD_CFG = BI_NERO_CFG.copy()
 BI_NERO_HIGH_PD_CFG.spawn.rigid_props.disable_gravity = False
-BI_NERO_HIGH_PD_CFG.actuators["bi_nero_arm"].stiffness = 380.0
-BI_NERO_HIGH_PD_CFG.actuators["bi_nero_arm"].damping = 160.0
+BI_NERO_HIGH_PD_CFG.actuators["bi_nero_arm"].stiffness = 400.0
+BI_NERO_HIGH_PD_CFG.actuators["bi_nero_arm"].damping = 200.0
 """Configuration of Bi-Nero bimanual robot with stiffer PD control."""
 

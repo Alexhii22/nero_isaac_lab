@@ -43,6 +43,66 @@ class DynamicSweepPoseCommand(UniformPoseCommand):
         # 等待倒计时（秒）
         self.wait_timer = torch.zeros(num_envs, dtype=torch.float32, device=device)
 
+        # 获取引导长方体资产
+        self.left_cuboids = [
+            env.scene["left_guide_cuboid_1"],
+            env.scene["left_guide_cuboid_2"],
+            env.scene["left_guide_cuboid_3"],
+            env.scene["left_guide_cuboid_4"],
+        ]
+        self.right_cuboids = [
+            env.scene["right_guide_cuboid_1"],
+            env.scene["right_guide_cuboid_2"],
+            env.scene["right_guide_cuboid_3"],
+            env.scene["right_guide_cuboid_4"],
+        ]
+        # 从配置中获取本地偏移 (在目标 pose 的局部坐标系下)
+        self.cuboid_offsets = torch.tensor([
+            [0.0,  self.cfg.cuboid_offset, 0.0],  # Y+
+            [0.0, -self.cfg.cuboid_offset, 0.0],  # Y-
+            [self.cfg.cuboid_offset, 0.0, 0.0],  # X+
+            [-self.cfg.cuboid_offset, 0.0, 0.0], # X-
+        ], device=device, dtype=torch.float32)
+
+    # ------------------------------------------------------------------
+    # 内部辅助：更新长方体物理位置
+    # ------------------------------------------------------------------
+    def _update_cuboid_poses(self):
+        """根据当前的 pose_command_b 更新长方体在仿真中的位置。"""
+        from isaaclab.utils.math import combine_frame_transforms
+
+        # 获取机器人根位置和姿态（用于从机器人坐标系转回世界坐标系）
+        robot = self._env.scene["robot"]
+        root_pos_w = robot.data.root_pos_w
+        root_quat_w = robot.data.root_quat_w
+
+        # 获取目标位姿（机器人系）
+        target_pos_b = self.pose_command_b[:, :3]
+        target_quat_b = self.pose_command_b[:, 3:7]
+
+        # 遍历左右臂
+        is_left = "left" in self.cfg.body_name
+        cuboids = self.left_cuboids if is_left else self.right_cuboids
+
+        for i, cuboid in enumerate(cuboids):
+            # 1. 计算长方体在机器人坐标系下的位姿 (目标位姿 + 局部偏移)
+            offset = self.cuboid_offsets[i].unsqueeze(0).expand(self._env.num_envs, 3)
+            cuboid_pos_b, _ = combine_frame_transforms(target_pos_b, target_quat_b, offset)
+            cuboid_quat_b = target_quat_b
+
+            # 2. 转换到世界坐标系
+            cuboid_pos_w, cuboid_quat_w = combine_frame_transforms(
+                root_pos_w, root_quat_w, cuboid_pos_b, cuboid_quat_b
+            )
+
+            # 3. 如果环境处于等待状态（静态），将长方体移到远处（隐藏视觉干扰）
+            waiting_mask = ~self.is_moving
+            cuboid_pos_w[waiting_mask, 1] -= 10.0  # 移到 Y 轴远处
+
+            # 4. 写入仿真
+            cuboid_pose_w = torch.cat((cuboid_pos_w, cuboid_quat_w), dim=-1)
+            cuboid.write_root_pose_to_sim(cuboid_pose_w)
+
     # ------------------------------------------------------------------
     # 内部辅助：移动目标到固定休息位置（等待期使用）
     # ------------------------------------------------------------------
@@ -133,6 +193,9 @@ class DynamicSweepPoseCommand(UniformPoseCommand):
             if len(done_ids) > 0:
                 self._reset_target(done_ids)
 
+        # ---- 3. 同步引导长方体位置 ----
+        self._update_cuboid_poses()
+
 
 # ---------------------------------------------------------------------------
 # 配置类
@@ -160,6 +223,9 @@ class DynamicSweepPoseCommandCfg(UniformPoseCommandCfg):
     # --- 运动参数 ---
     velocity: float = 0.20
     """Y 轴移动速度（m/s），内部取负，目标向负 Y 方向移动。"""
+
+    cuboid_offset: float = 0.30
+    """引导长方体相对于目标的 Y 轴偏移量（m）。"""
 
     start_pos_y: float = MISSING
     """动态目标出现时的 Y 初始坐标。Left: 0.0, Right: 0.3"""

@@ -18,3 +18,4 @@ from .action_delay_wrapper import ActionDelayWrapper  # noqa: F401
 from .observations import *  # noqa: F401, F403
 from .rewards import *  # noqa: F401, F403
 from .dynamic_pose_command import DynamicSweepPoseCommand, DynamicSweepPoseCommandCfg  # noqa: F401
+from .actions import EMAJointPositionAction, EMAJointPositionActionCfg  # noqa: F401
