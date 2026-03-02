@@ -234,7 +234,7 @@ def main():
         "value_preprocessor":              RunningStandardScaler,
         "value_preprocessor_kwargs":       {"size": 1, "device": device},
         # 增大熵系数：防止策略过早收敛到次优的局部极值
-        "entropy_loss_scale":    0.02,
+        "entropy_loss_scale":    0.03,
         # 提高学习率：加快从好轨迹中学习的速度
         "learning_rate":         3e-4,
         "experiment": {

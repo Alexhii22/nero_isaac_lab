@@ -222,17 +222,81 @@ def _zmq_publisher_impl(zmq_addr: str, env, actions: dict, step_time: float, env
         if t is None:
             return [0.0] * 7
         try:
-            # 兼容不同结构的 tensor
-            x = t[env_id] if (torch.is_tensor(t) and t.dim() > 1) else t
-            return x.detach().cpu().numpy().tolist() if isinstance(x, torch.Tensor) else list(x)
+            # 统一处理 torch.Tensor 和 np.ndarray
+            if torch.is_tensor(t):
+                x = t[env_id] if t.dim() > 1 else t
+                return x.detach().cpu().numpy().tolist()
+            elif isinstance(t, np.ndarray):
+                x = t[env_id] if t.ndim > 1 else t
+                return x.tolist()
+            elif isinstance(t, (list, tuple)):
+                return list(t)
+            return [float(t)]
         except Exception:
             return [0.0] * 7
+
+    # 计算绝对目标角度 (Target Joint Position) - 简化逻辑
+    # 依据 BiNeroReachEnvCfg 中的配置：scale=0.5, use_default_offset=True
+    DEFAULT_LEFT = [1.0, 1.0, -1.0, 1.5, 1.0, 0.0, 0.0]
+    DEFAULT_RIGHT = [-1.0, 1.0, 1.0, 1.5, -1.0, 0.0, 0.0]
+    SCALE = 0.5
+
+    left_target_joint_pos = DEFAULT_LEFT
+    right_target_joint_pos = DEFAULT_RIGHT
+
+    try:
+        # 获取动作 tensor
+        l_raw = actions.get("left")
+        r_raw = actions.get("right")
+        
+        # 调试输出：每 100 步打印一次数据状态
+        ts = getattr(_zmq_publisher_impl, "_timestep", 0)
+        show_debug = (ts % 100 == 0)
+
+        if l_raw is not None and r_raw is not None:
+            # 取当前环境 ID 的动作并转为 list
+            def extract_act(raw, default):
+                try:
+                    if torch.is_tensor(raw):
+                        a = raw[env_id] if raw.dim() > 1 else raw
+                        return a.detach().cpu().numpy().tolist()
+                    elif isinstance(raw, np.ndarray):
+                        a = raw[env_id] if raw.ndim > 1 else raw
+                        return a.tolist()
+                    elif isinstance(raw, (list, tuple)):
+                        return list(raw)
+                    return default
+                except Exception:
+                    return default
+
+            l_act = extract_act(l_raw, [0.0]*7)
+            r_act = extract_act(r_raw, [0.0]*7)
+            
+            # 直接计算绝对目标：target = default + action * scale
+            left_target_joint_pos = [d + a * SCALE for d, a in zip(DEFAULT_LEFT, l_act)]
+            right_target_joint_pos = [d + a * SCALE for d, a in zip(DEFAULT_RIGHT, r_act)]
+            
+            if show_debug:
+                print(f"[ZMQ] [DEBUG] Step {ts}:")
+                print(f"      l_act (first 3): {l_act[:3]}")
+                print(f"      l_target (first 3): {left_target_joint_pos[:3]}")
+        else:
+            if show_debug:
+                print(f"[ZMQ] [WARN] Actions missing: left={l_raw is None}, right={r_raw is None}")
+    except Exception as e:
+        if not hasattr(_zmq_publisher_impl, "_error_printed"):
+            print(f"[ZMQ] [ERROR] Target calculation failed at step {ts}: {e}")
+            import traceback
+            traceback.print_exc()
+            _zmq_publisher_impl._error_printed = True
 
     payload = {
         "t": step_time,
         "timestep": getattr(_zmq_publisher_impl, "_timestep", 0),
         "left_action": to_list(actions.get("left")),
         "right_action": to_list(actions.get("right")),
+        "left_target_joint_pos": left_target_joint_pos,
+        "right_target_joint_pos": right_target_joint_pos,
         "left_joint_pos": left_joint_pos,
         "right_joint_pos": right_joint_pos,
     }
