@@ -40,6 +40,7 @@ parser.add_argument("--max_iterations", type=int,   default=2000,  help="Number 
 parser.add_argument("--video",          action="store_true", default=False)
 parser.add_argument("--video_length",   type=int,   default=200)
 parser.add_argument("--video_interval", type=int,   default=2000)
+parser.add_argument("--checkpoint",     type=str,   default=None,  help="Path to model checkpoint to resume training.")
 AppLauncher.add_app_launcher_args(parser)
 args_cli, hydra_args = parser.parse_known_args()
 
@@ -263,6 +264,16 @@ def main():
         "close_environment_at_exit": False,
         "environment_info":        "log",
     }
+    # ---- Load Checkpoint ----
+    if args_cli.checkpoint:
+        checkpoint_path = os.path.abspath(args_cli.checkpoint)
+        if os.path.exists(checkpoint_path):
+            print(f"[INFO] Loading model checkpoint from: {checkpoint_path}")
+            agent.load(checkpoint_path)
+        else:
+            print(f"[ERROR] Checkpoint file not found: {checkpoint_path}")
+            exit(1)
+
     trainer = SequentialTrainer(cfg=trainer_cfg, env=env, agents=agent)
     trainer.train()
 

@@ -75,7 +75,7 @@ BI_NERO_CFG = ArticulationCfg(
 
 BI_NERO_HIGH_PD_CFG = BI_NERO_CFG.copy()
 BI_NERO_HIGH_PD_CFG.spawn.rigid_props.disable_gravity = False
-BI_NERO_HIGH_PD_CFG.actuators["bi_nero_arm"].stiffness = 400.0
-BI_NERO_HIGH_PD_CFG.actuators["bi_nero_arm"].damping = 200.0
+BI_NERO_HIGH_PD_CFG.actuators["bi_nero_arm"].stiffness = 420.0
+BI_NERO_HIGH_PD_CFG.actuators["bi_nero_arm"].damping = 180.0
 """Configuration of Bi-Nero bimanual robot with stiffer PD control."""
 

@@ -10,6 +10,7 @@
 
 from __future__ import annotations
 
+import math
 import torch
 from dataclasses import MISSING
 from typing import TYPE_CHECKING
@@ -58,11 +59,27 @@ class DynamicSweepPoseCommand(UniformPoseCommand):
         ]
         # 从配置中获取本地偏移 (在目标 pose 的局部坐标系下)
         self.cuboid_offsets = torch.tensor([
-            [0.0,  self.cfg.cuboid_offset, 0.0],  # Y+
-            [0.0, -self.cfg.cuboid_offset, 0.0],  # Y-
-            [self.cfg.cuboid_offset, 0.0, 0.0],  # X+
-            [-self.cfg.cuboid_offset, 0.0, 0.0], # X-
+            [0.0,  self.cfg.cuboid_offset, 0.0],  # Y+ (Cuboid 1)
+            [0.0, -self.cfg.cuboid_offset, 0.0],  # Y- (Cuboid 2)
+            [self.cfg.cuboid_offset, 0.0, 0.0],  # X+ (Cuboid 3)
+            [-self.cfg.cuboid_offset, 0.0, 0.0], # X- (Cuboid 4)
         ], device=device, dtype=torch.float32)
+
+        # 预计算旋转四元数，构建漏斗形状 (Funnel)
+        # 我们根据 tilt_deg 绕局部坐标轴旋转，使顶部开口比底部宽
+        from isaaclab.utils.math import quat_from_euler_xyz
+        tilt_rad = math.radians(self.cfg.tilt_deg)
+        
+        # Cuboid 1 (Y+): 绕 X 轴正向旋转
+        q1 = quat_from_euler_xyz(torch.tensor([tilt_rad], device=device), torch.zeros(1, device=device), torch.zeros(1, device=device))
+        # Cuboid 2 (Y-): 绕 X 轴负向旋转
+        q2 = quat_from_euler_xyz(torch.tensor([-tilt_rad], device=device), torch.zeros(1, device=device), torch.zeros(1, device=device))
+        # Cuboid 3 (X+): 绕 Y 轴负向旋转 (漏斗向内倾斜)
+        q3 = quat_from_euler_xyz(torch.zeros(1, device=device), torch.tensor([-tilt_rad], device=device), torch.zeros(1, device=device))
+        # Cuboid 4 (X-): 绕 Y 轴正向旋转
+        q4 = quat_from_euler_xyz(torch.zeros(1, device=device), torch.tensor([tilt_rad], device=device), torch.zeros(1, device=device))
+        
+        self.cuboid_quats_rel = torch.cat([q1, q2, q3, q4], dim=0).to(device) # (4, 4)
 
     # ------------------------------------------------------------------
     # 内部辅助：更新长方体物理位置
@@ -88,7 +105,11 @@ class DynamicSweepPoseCommand(UniformPoseCommand):
             # 1. 计算长方体在机器人坐标系下的位姿 (目标位姿 + 局部偏移)
             offset = self.cuboid_offsets[i].unsqueeze(0).expand(self._env.num_envs, 3)
             cuboid_pos_b, _ = combine_frame_transforms(target_pos_b, target_quat_b, offset)
-            cuboid_quat_b = target_quat_b
+            
+            # 应用相对旋转，形成斜面
+            from isaaclab.utils.math import quat_mul
+            rel_quat = self.cuboid_quats_rel[i].unsqueeze(0).expand(self._env.num_envs, 4)
+            cuboid_quat_b = quat_mul(target_quat_b, rel_quat)
 
             # 2. 转换到世界坐标系
             cuboid_pos_w, cuboid_quat_w = combine_frame_transforms(
@@ -227,6 +248,9 @@ class DynamicSweepPoseCommandCfg(UniformPoseCommandCfg):
     cuboid_offset: float = 0.30
     """引导长方体相对于目标的 Y 轴偏移量（m）。"""
 
+    tilt_deg: float = 0.0
+    """引导长方体的倾斜角度（度）。正值向外张开形成漏斗。"""
+
     start_pos_y: float = MISSING
     """动态目标出现时的 Y 初始坐标。Left: 0.0, Right: 0.3"""
 
@@ -242,14 +266,14 @@ class DynamicSweepPoseCommandCfg(UniformPoseCommandCfg):
     pos_x_max: float = MISSING
     """动态目标 X 随机范围上限（m）。"""
 
-    # --- 休息位置（等待期目标）---
-    rest_pos_x: float = MISSING
+    # --- 休息位置（等待期目标，可选；不设则用下方默认）---
+    rest_pos_x: float = 0.0
     """等待期固定目标 X 坐标（m）。"""
 
-    rest_pos_y: float = MISSING
+    rest_pos_y: float = 0.0
     """等待期固定目标 Y 坐标（m）。"""
 
-    rest_pos_z: float = MISSING
+    rest_pos_z: float = 0.40
     """等待期固定目标 Z 坐标（m）。"""
 
     # --- 等待时间 ---

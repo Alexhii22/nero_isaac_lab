@@ -25,6 +25,12 @@
         --task Isaac-Reach-BiNero-MAPPO-v0 \\
         --num_envs 4 \\
         --checkpoint logs/skrl/bi_nero_mappo/2026-02-24_12-00-00/checkpoints/agent_48000.pt
+
+    # 通过 ZMQ 发布 policy 指令与关节状态（PlotJuggler 可订阅）
+    python scripts/reinforcement_learning/mappo/play.py \\
+        --task Isaac-Reach-BiNero-MAPPO-v0 \\
+        --num_envs 4 \\
+        --zmq_addr tcp://*:5556
 """
 
 """Launch Isaac Sim Simulator first."""
@@ -45,6 +51,12 @@ parser.add_argument("--checkpoint", type=str,  default=None, help="Path to check
 parser.add_argument("--video",      action="store_true", default=False)
 parser.add_argument("--video_length", type=int, default=200)
 parser.add_argument("--real_time",  action="store_true", default=False, help="Slow down to real-time speed.")
+parser.add_argument(
+    "--zmq_addr",
+    type=str,
+    default=None,
+    help="ZMQ PUB address for streaming policy commands and joint state as JSON (e.g. tcp://*:5556). PlotJuggler can subscribe.",
+)
 AppLauncher.add_app_launcher_args(parser)
 args_cli, hydra_args = parser.parse_known_args()
 
@@ -61,6 +73,7 @@ simulation_app = app_launcher.app
 import glob
 import os
 import time
+import json
 
 import gymnasium as gym
 import numpy as np
@@ -72,6 +85,16 @@ from skrl.utils.model_instantiators.torch import deterministic_model, gaussian_m
 
 import bi_nero.tasks  # noqa: F401  — 触发 gym.register
 from bi_nero.tasks.manager_based.bimanual.reach.marl_wrapper import BimanualMARLWrapper
+
+# 关节名（与 reach_env_cfg / asset 一致）
+LEFT_JOINT_NAMES = [
+    "left_joint1", "left_joint2", "left_joint3", "left_joint4",
+    "left_joint5", "left_joint6", "left_joint7",
+]
+RIGHT_JOINT_NAMES = [
+    "right_joint1", "right_joint2", "right_joint3", "right_joint4",
+    "right_joint5", "right_joint6", "right_joint7",
+]
 
 # ------------------------------------------------------------------ #
 # 超参（需与 train.py 保持一致，否则模型结构不匹配无法加载 checkpoint）
@@ -133,8 +156,117 @@ def find_latest_checkpoint(log_root: str) -> str:
 
 
 # ------------------------------------------------------------------ #
-# 主函数
+# ZMQ 发布：policy 指令 + 关节状态 → JSON，供 PlotJuggler 订阅
+#
+# JSON 每步一条，格式示例：
+#   {
+#     "t": 1234567890.123,       // 本机时间戳 (s)
+#     "timestep": 42,            // 仿真步数
+#     "left_action": [0.1,-0.2,...],   // 左臂 policy 输出 7D，[-1,1] 归一化
+#     "right_action": [...],             // 右臂 policy 输出 7D
+#     "left_joint_pos": [1.0,1.0,...],   // 左臂当前关节角 (rad)，7D
+#     "right_joint_pos": [...]           // 右臂当前关节角 (rad)，7D
+#   }
+# PlotJuggler：Streaming → Add ZMQ Subscriber，URL 填 tcp://localhost:5556
 # ------------------------------------------------------------------ #
+
+def _zmq_publisher_impl(zmq_addr: str, env, actions: dict, step_time: float, env_id: int = 0):
+    """从 env 取 robot 关节状态，与 actions 一起序列化为 JSON 并通过 ZMQ 发送。"""
+    try:
+        import zmq
+    except ImportError:
+        return
+
+    if not hasattr(_zmq_publisher_impl, "_socket"):
+        try:
+            ctx = zmq.Context()
+            _zmq_publisher_impl._socket = ctx.socket(zmq.PUB)
+            # 解决 Address already in use 报错
+            _zmq_publisher_impl._socket.setsockopt(zmq.LINGER, 0)
+            _zmq_publisher_impl._socket.bind(zmq_addr)
+            print(f"[ZMQ] Success: Publishing JSON to {zmq_addr}")
+            print(f"[ZMQ] Tip: In PlotJuggler, add 'ZMQ Subscriber', set URL to '{zmq_addr.replace('*', 'localhost')}', and leave 'Topic' empty.")
+        except Exception as e:
+            print(f"[ZMQ] [ERROR] Failed to bind to {zmq_addr}: {e}")
+            # 防止重复报错
+            _zmq_publisher_impl._socket = None
+            return
+
+    sock = _zmq_publisher_impl._socket
+    if sock is None:
+        return
+
+    try:
+        robot = env.unwrapped.scene["robot"]
+        # 记录关节 ID 以避免重复查找
+        if not hasattr(_zmq_publisher_impl, "_left_ids"):
+            _zmq_publisher_impl._left_ids, _ = robot.find_joints(LEFT_JOINT_NAMES, preserve_order=True)
+            _zmq_publisher_impl._right_ids, _ = robot.find_joints(RIGHT_JOINT_NAMES, preserve_order=True)
+            if torch.is_tensor(_zmq_publisher_impl._left_ids):
+                _zmq_publisher_impl._left_ids = _zmq_publisher_impl._left_ids.cpu().numpy()
+            if torch.is_tensor(_zmq_publisher_impl._right_ids):
+                _zmq_publisher_impl._right_ids = _zmq_publisher_impl._right_ids.cpu().numpy()
+
+        jpos = robot.data.joint_pos[env_id].cpu().numpy()
+        left_joint_pos = jpos[_zmq_publisher_impl._left_ids].tolist()
+        right_joint_pos = jpos[_zmq_publisher_impl._right_ids].tolist()
+    except Exception as e:
+        if not hasattr(_zmq_publisher_impl, "_state_warned"):
+            print(f"[ZMQ] [WARN] Could not get robot state: {e}")
+            _zmq_publisher_impl._state_warned = True
+        left_joint_pos = [0.0] * 7
+        right_joint_pos = [0.0] * 7
+
+    # 动作：取 env_id 对应的 mean_actions（已转为 tensor），转 list
+    def to_list(t):
+        if t is None:
+            return [0.0] * 7
+        try:
+            # 兼容不同结构的 tensor
+            x = t[env_id] if (torch.is_tensor(t) and t.dim() > 1) else t
+            return x.detach().cpu().numpy().tolist() if isinstance(x, torch.Tensor) else list(x)
+        except Exception:
+            return [0.0] * 7
+
+    payload = {
+        "t": step_time,
+        "timestep": getattr(_zmq_publisher_impl, "_timestep", 0),
+        "left_action": to_list(actions.get("left")),
+        "right_action": to_list(actions.get("right")),
+        "left_joint_pos": left_joint_pos,
+        "right_joint_pos": right_joint_pos,
+    }
+    
+    try:
+        sock.send_string(json.dumps(payload))
+        # 调试：每 100 步打印一次确认
+        ts = getattr(_zmq_publisher_impl, "_timestep", 0)
+        if ts % 100 == 0:
+            print(f"[ZMQ] Sent packet {ts} at {step_time:.3f}")
+        _zmq_publisher_impl._timestep = ts + 1
+    except Exception as e:
+        if not hasattr(_zmq_publisher_impl, "_send_warned"):
+            print(f"[ZMQ] [ERROR] Send failed: {e}")
+            _zmq_publisher_impl._send_warned = True
+
+
+def maybe_publish_zmq(zmq_addr: str | None, env, actions: dict):
+    if not zmq_addr:
+        return
+    try:
+        import zmq  # noqa: F401
+    except ImportError:
+        if not getattr(maybe_publish_zmq, "_warned", False):
+            print("\n" + "="*50)
+            print("[ERROR] ZMQ Data Streaming requested but 'pyzmq' not found!")
+            print("Please run: pip install pyzmq")
+            print("="*50 + "\n")
+            maybe_publish_zmq._warned = True
+        return
+    
+    step_time = time.time()
+    _zmq_publisher_impl(zmq_addr, env, actions, step_time, env_id=0)
+
 
 def main():
     device = args_cli.device if args_cli.device else "cuda:0"
@@ -148,9 +280,9 @@ def main():
 
     # ---- 环境配置 ----
     from bi_nero.tasks.manager_based.bimanual.reach.config.joint_pos_env_cfg_mappo import (
-        BiNeroReachMAPPOEnvCfg,
+        BiNeroReachMAPPOEnvCfg_PLAY,
     )
-    env_cfg = BiNeroReachMAPPOEnvCfg()
+    env_cfg = BiNeroReachMAPPOEnvCfg_PLAY()
     env_cfg.seed = args_cli.seed
     env_cfg.sim.device = device
     env_cfg.scene.num_envs = args_cli.num_envs
@@ -251,6 +383,9 @@ def main():
             }
 
             obs, _, terminated, _, _ = env.step(actions)
+
+        # ZMQ：发布 policy 指令与关节状态（PlotJuggler 可订阅）
+        maybe_publish_zmq(args_cli.zmq_addr, env, actions)
 
         if args_cli.video:
             timestep += 1

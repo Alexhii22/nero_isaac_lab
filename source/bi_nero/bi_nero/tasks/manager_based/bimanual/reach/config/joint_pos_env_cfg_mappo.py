@@ -63,3 +63,20 @@ class BiNeroReachMAPPOEnvCfg(BiNeroReachEnvCfg):
         obs_c.right_joint_prev_pos.params["default_joint_pos"] = [
             -1.0, 1.0, 1.0, 1.5, -1.0, 0.0, 0.0,
         ]
+
+
+@configclass
+class BiNeroReachMAPPOEnvCfg_PLAY(BiNeroReachMAPPOEnvCfg):
+    """MAPPO play 专用：小场景、无延迟、无观测噪声，引导距离直接为 0.05。"""
+
+    def __post_init__(self):
+        super().__post_init__()
+        self.action_delay_seconds = 0.0
+        self.scene.num_envs = 50
+        self.scene.env_spacing = 2.5
+        self.observations.policy_left.enable_corruption = False
+        self.observations.policy_right.enable_corruption = False
+        self.observations.critic.enable_corruption = False
+        # 直接使用收窄后的引导距离 0.05，便于查看课程结束效果
+        self.commands.left_ee_pose.cuboid_offset = 0.05
+        self.commands.right_ee_pose.cuboid_offset = 0.05
