@@ -28,7 +28,7 @@ class BiNeroReachMAPPOEnvCfg(BiNeroReachEnvCfg):
     - 覆盖三个新 ObsGroup 的 body_names / default_joint_pos
     """
 
-    action_delay_seconds: float = 0.008  # 3ms，模拟真实机器人命令延迟
+    action_delay_seconds: float = 0.003  # 3ms，模拟真实机器人命令延迟
 
     def __post_init__(self):
         super().__post_init__()  # 完成 BiNeroReachEnvCfg 的基础覆盖（actions, commands, rewards 等）
@@ -78,5 +78,5 @@ class BiNeroReachMAPPOEnvCfg_PLAY(BiNeroReachMAPPOEnvCfg):
         self.observations.policy_right.enable_corruption = False
         self.observations.critic.enable_corruption = False
         # 直接使用收窄后的引导距离 0.05，便于查看课程结束效果
-        self.commands.left_ee_pose.cuboid_offset = 0.05
-        self.commands.right_ee_pose.cuboid_offset = 0.05
+        self.commands.left_ee_pose.cuboid_offset = 0.10
+        self.commands.right_ee_pose.cuboid_offset = 0.10
