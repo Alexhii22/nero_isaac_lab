@@ -349,3 +349,16 @@ def undesired_region_penalty(
             total_violations += (inside & is_moving).float()
             
     return total_violations
+
+def joint_vel_flip_penalty(env: ManagerBasedRLEnv, asset_cfg: SceneEntityCfg) -> torch.Tensor:
+    """惩罚关节速度翻转（即方向改变）。如果 v_t * v_{t-1} < 0 则扣分。"""
+    asset = env.scene[asset_cfg.name]
+    vel = asset.data.joint_vel
+    # 使用加速度和 dt 推算上一时刻速度: v_{t-1} = v_t - a_t * dt
+    # 注意：env.step_dt 是当前仿真的步长
+    dt = env.physics_dt
+    last_vel = vel - asset.data.joint_acc[:, :vel.shape[1]] * dt
+    
+    # 检测符号改变: (v_t > 0 != v_{t-1} > 0) AND (两者都不接近0)
+    flip = (torch.sign(vel) != torch.sign(last_vel)) & (vel.abs() > 1e-3) & (last_vel.abs() > 1e-3)
+    return torch.sum(flip.float(), dim=-1)

@@ -116,9 +116,9 @@ class DynamicSweepPoseCommand(UniformPoseCommand):
                 root_pos_w, root_quat_w, cuboid_pos_b, cuboid_quat_b
             )
 
-            # 3. 如果环境处于等待状态（静态），将长方体移到远处（隐藏视觉干扰）
+            # 3. 如果环境处于等待状态（静态），将长方体移到远处（Z轴上方，避免干扰其它环境）
             waiting_mask = ~self.is_moving
-            cuboid_pos_w[waiting_mask, 1] -= 10.0  # 移到 Y 轴远处
+            cuboid_pos_w[waiting_mask, 2] += 10.0  # 移到 Z 轴上方远处
 
             # 4. 写入仿真
             cuboid_pose_w = torch.cat((cuboid_pos_w, cuboid_quat_w), dim=-1)

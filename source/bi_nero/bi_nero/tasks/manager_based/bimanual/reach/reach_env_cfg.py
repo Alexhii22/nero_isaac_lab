@@ -66,9 +66,9 @@ class ReachSceneCfg(InteractiveSceneCfg):
     # 引导长方体 (Left)
     left_guide_cuboid_1 = RigidObjectCfg(
         prim_path="{ENV_REGEX_NS}/left_guide_cuboid_1",
-        init_state=RigidObjectCfg.InitialStateCfg(pos=(0.1, 0.0, 0.0)),
+        init_state=RigidObjectCfg.InitialStateCfg(pos=(0.0, 0.0, 0.0)),
         spawn=sim_utils.CuboidCfg(
-            size=(0.2, 0.08, 0.2),
+            size=(0.2, 0.08, 0.1),
             visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 1.0, 0.0), opacity=1.0),
             rigid_props=sim_utils.RigidBodyPropertiesCfg(
                 disable_gravity=True,
@@ -80,9 +80,9 @@ class ReachSceneCfg(InteractiveSceneCfg):
     )
     left_guide_cuboid_2 = RigidObjectCfg(
         prim_path="{ENV_REGEX_NS}/left_guide_cuboid_2",
-        init_state=RigidObjectCfg.InitialStateCfg(pos=(0.1, 0.0, 0.0)),
+        init_state=RigidObjectCfg.InitialStateCfg(pos=(0.0, 0.0, 0.0)),
         spawn=sim_utils.CuboidCfg(
-            size=(0.2, 0.08, 0.2),
+            size=(0.2, 0.08, 0.1),
             visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 1.0, 0.0), opacity=1.0),
             rigid_props=sim_utils.RigidBodyPropertiesCfg(
                 disable_gravity=True,
@@ -96,7 +96,7 @@ class ReachSceneCfg(InteractiveSceneCfg):
         prim_path="{ENV_REGEX_NS}/left_guide_cuboid_3",
         init_state=RigidObjectCfg.InitialStateCfg(pos=(0.1, 0.0, 0.0)),
         spawn=sim_utils.CuboidCfg(
-            size=(0.08, 0.2, 0.2),
+            size=(0.08, 0.2, 0.1),
             visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 1.0, 0.0), opacity=1.0),
             rigid_props=sim_utils.RigidBodyPropertiesCfg(
                 disable_gravity=True,
@@ -106,9 +106,9 @@ class ReachSceneCfg(InteractiveSceneCfg):
     )
     left_guide_cuboid_4 = RigidObjectCfg(
         prim_path="{ENV_REGEX_NS}/left_guide_cuboid_4",
-        init_state=RigidObjectCfg.InitialStateCfg(pos=(0.1, 0.0, 0.0)),
+        init_state=RigidObjectCfg.InitialStateCfg(pos=(0.0, 0.0, 0.0)),
         spawn=sim_utils.CuboidCfg(
-            size=(0.08, 0.2, 0.2),
+            size=(0.08, 0.2, 0.1),
             visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 1.0, 0.0), opacity=1.0),
             rigid_props=sim_utils.RigidBodyPropertiesCfg(
                 disable_gravity=True,
@@ -120,9 +120,9 @@ class ReachSceneCfg(InteractiveSceneCfg):
     # 引导长方体 (Right)
     right_guide_cuboid_1 = RigidObjectCfg(
         prim_path="{ENV_REGEX_NS}/right_guide_cuboid_1",
-        init_state=RigidObjectCfg.InitialStateCfg(pos=(0.2, 0.0, 0.1)),
+        init_state=RigidObjectCfg.InitialStateCfg(pos=(0.0, 0.0, 0.0)),
         spawn=sim_utils.CuboidCfg(
-            size=(0.2, 0.08, 0.2),
+            size=(0.2, 0.08, 0.1),
             visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 1.0), opacity=1.0),
             rigid_props=sim_utils.RigidBodyPropertiesCfg(
                 disable_gravity=True,
@@ -134,9 +134,9 @@ class ReachSceneCfg(InteractiveSceneCfg):
     )
     right_guide_cuboid_2 = RigidObjectCfg(
         prim_path="{ENV_REGEX_NS}/right_guide_cuboid_2",
-        init_state=RigidObjectCfg.InitialStateCfg(pos=(0.2, 0.0, 0.1)),
+        init_state=RigidObjectCfg.InitialStateCfg(pos=(0.0, 0.0, 0.0)),
         spawn=sim_utils.CuboidCfg(
-            size=(0.2, 0.08, 0.2),
+            size=(0.2, 0.08, 0.1),
             visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 1.0), opacity=1.0),
             rigid_props=sim_utils.RigidBodyPropertiesCfg(
                 disable_gravity=True,
@@ -148,9 +148,9 @@ class ReachSceneCfg(InteractiveSceneCfg):
     )
     right_guide_cuboid_3 = RigidObjectCfg(
         prim_path="{ENV_REGEX_NS}/right_guide_cuboid_3",
-        init_state=RigidObjectCfg.InitialStateCfg(pos=(0.2, 0.0, 0.1)),
+        init_state=RigidObjectCfg.InitialStateCfg(pos=(0.0, 0.0, 0.0)),
         spawn=sim_utils.CuboidCfg(
-            size=(0.08, 0.2, 0.2),
+            size=(0.08, 0.2, 0.1),
             visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 1.0), opacity=1.0),
             rigid_props=sim_utils.RigidBodyPropertiesCfg(
                 disable_gravity=True,
@@ -160,9 +160,9 @@ class ReachSceneCfg(InteractiveSceneCfg):
     )
     right_guide_cuboid_4 = RigidObjectCfg(
         prim_path="{ENV_REGEX_NS}/right_guide_cuboid_4",
-        init_state=RigidObjectCfg.InitialStateCfg(pos=(0.2, 0.0, 0.1)),
+        init_state=RigidObjectCfg.InitialStateCfg(pos=(0.0, 0.0, 0.0)),
         spawn=sim_utils.CuboidCfg(
-            size=(0.08, 0.2, 0.2),
+            size=(0.08, 0.2, 0.1),
             visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 1.0), opacity=1.0),
             rigid_props=sim_utils.RigidBodyPropertiesCfg(
                 disable_gravity=True,
@@ -197,18 +197,18 @@ class CommandsCfg:
             yaw=(math.pi + 9.5 * math.pi / 10, 2 * math.pi),
         ),
         # ---- 动态运动参数 ----
-        velocity=0.20,          # m/s，Y 轴移动速度
+        velocity=0.10,          # m/s，Y 轴移动速度
         cuboid_offset=0.30,      # 引导长方体离目标的距离 (m)  动态障碍物
         tilt_deg=10.0,          # 10度倾斜漏斗
         start_pos_y=-0.05,        # Left 从 Y=0.0 出发
-        end_pos_y=-0.4,         # Left 到 Y=-0.3 后进入等待
+        end_pos_y=-0.3,         # Left 到 Y=-0.3 后进入等待
         fixed_pos_z=0.40,       # 动态目标固定 Z
-        pos_x_min=-0.4,         # 动态目标 X 随机范围
+        pos_x_min=-0.3,         # 动态目标 X 随机范围
         pos_x_max=-0.1,
         # 等待期固定目标（左臂工作空间内）
-        rest_pos_x=-0.45,
-        rest_pos_y=-0.05,
-        rest_pos_z=0.55,
+        rest_pos_x=-0.35,
+        rest_pos_y=-0.20,
+        rest_pos_z=0.5,
         # ---- 等待时间 ----
         wait_time_min=1.0,
         wait_time_max=3.0,
@@ -229,18 +229,18 @@ class CommandsCfg:
             yaw=(9.6 * math.pi / 10, 10.4 * math.pi / 10),
         ),
         # ---- 动态运动参数 ----
-        velocity=0.20,          # m/s，Y 轴移动速度
+        velocity=0.10,          # m/s，Y 轴移动速度
         cuboid_offset=0.30,      # 引导长方体离目标的距离 (m)
         tilt_deg=-10.0,          # 10度倾斜漏斗
-        start_pos_y=0.5,        # Right 从 Y=0.3 出发
+        start_pos_y=0.3,        # Right 从 Y=0.3 出发
         end_pos_y=0.05,          # Right 到 Y=0.0 后进入等待
         fixed_pos_z=0.40,       # 动态目标固定 Z
-        pos_x_min=-0.4,         # 动态目标 X 随机范围
+        pos_x_min=-0.3,         # 动态目标 X 随机范围
         pos_x_max=-0.1,
         # 等待期固定目标（右臂工作空间内）
-        rest_pos_x=-0.45,
-        rest_pos_y=0.30,
-        rest_pos_z=0.55,
+        rest_pos_x=-0.35,
+        rest_pos_y=0.20,
+        rest_pos_z=0.5,
         # ---- 等待时间 ----
         wait_time_min=1.0,
         wait_time_max=3.0,
@@ -581,16 +581,16 @@ class EventCfg:
         },
     )
 
-    # randomize_actuator_gains = EventTerm(
-    #     func=mdp.randomize_actuator_gains,
-    #     mode="reset",
-    #     params={
-    #         "asset_cfg": SceneEntityCfg("robot", joint_names=".*"),
-    #         "stiffness_distribution_params": (0.9, 1.1),
-    #         "damping_distribution_params": (0.9, 1.1),
-    #         "operation": "scale",
-    #     },
-    # )
+    randomize_actuator_gains = EventTerm(
+        func=mdp.randomize_actuator_gains,
+        mode="reset",
+        params={
+            "asset_cfg": SceneEntityCfg("robot", joint_names=".*"),
+            "stiffness_distribution_params": (0.9, 1.1),
+            "damping_distribution_params": (0.9, 1.1),
+            "operation": "scale",
+        },
+    )
 #先暂用
 
 
@@ -804,6 +804,16 @@ class RewardsCfg:
             ]),
         },
     )
+    left_joint_vel_flip = RewTerm(
+        func=mdp.joint_vel_flip_penalty,
+        weight=0.0,
+        params={"asset_cfg": SceneEntityCfg("robot", joint_names="left_joint.*")},
+    )
+    right_joint_vel_flip = RewTerm(
+        func=mdp.joint_vel_flip_penalty,
+        weight=0.0,
+        params={"asset_cfg": SceneEntityCfg("robot", joint_names="right_joint.*")},
+    )
 
     # 虚拟区域惩罚：数学检测机械臂关节是否进入引导区域
     left_undesired_region_y = RewTerm(
@@ -812,7 +822,7 @@ class RewardsCfg:
         params={
             "asset_cfg": SceneEntityCfg("robot", body_names="left_link7"),
             "region_asset_names": ["left_guide_cuboid_1", "left_guide_cuboid_2"],
-            "size": (0.2, 0.08, 0.2),
+            "size": (0.2, 0.08, 0.3),
             "command_name": "left_ee_pose",
         },
     )
@@ -822,7 +832,7 @@ class RewardsCfg:
         params={
             "asset_cfg": SceneEntityCfg("robot", body_names="left_link7"),
             "region_asset_names": ["left_guide_cuboid_3", "left_guide_cuboid_4"],
-            "size": (0.08, 0.2, 0.2),
+            "size": (0.08, 0.2, 0.3),
             "command_name": "left_ee_pose",
         },
     )
@@ -832,7 +842,7 @@ class RewardsCfg:
         params={
             "asset_cfg": SceneEntityCfg("robot", body_names="right_link7"),
             "region_asset_names": ["right_guide_cuboid_1", "right_guide_cuboid_2"],
-            "size": (0.2, 0.08, 0.2),
+            "size": (0.2, 0.08, 0.3),
             "command_name": "right_ee_pose",
         },
     )
@@ -842,7 +852,7 @@ class RewardsCfg:
         params={
             "asset_cfg": SceneEntityCfg("robot", body_names="right_link7"),
             "region_asset_names": ["right_guide_cuboid_3", "right_guide_cuboid_4"],
-            "size": (0.08, 0.2, 0.2),
+            "size": (0.08, 0.2, 0.3),
             "command_name": "right_ee_pose",
         },
     )
@@ -887,19 +897,19 @@ class CurriculumCfg:
     # 引导区课程：前 5000   第一轮训练 0-----5000  第二轮训练-5000 ----- -10000
     left_undesired_region_y = CurrTerm(
         func=mdp.modify_reward_weight,
-        params={"term_name": "left_undesired_region_y", "weight": -5000.0, "num_steps": 10000},
+        params={"term_name": "left_undesired_region_y", "weight": -2.0, "num_steps": 10000},
     )
     left_undesired_region_x = CurrTerm(
         func=mdp.modify_reward_weight,
-        params={"term_name": "left_undesired_region_x", "weight": -5500.0, "num_steps": 10000},
+        params={"term_name": "left_undesired_region_x", "weight": -2.0, "num_steps": 10000},
     )
     right_undesired_region_y = CurrTerm(
         func=mdp.modify_reward_weight,
-        params={"term_name": "right_undesired_region_y", "weight": -5000.0, "num_steps": 10000},
+        params={"term_name": "right_undesired_region_y", "weight": -2.0, "num_steps": 10000},
     )
     right_undesired_region_x = CurrTerm(
         func=mdp.modify_reward_weight,
-        params={"term_name": "right_undesired_region_x", "weight": -5500.0, "num_steps": 10000},
+        params={"term_name": "right_undesired_region_x", "weight": -2.0, "num_steps": 10000},
     )
 
     # 引导距离课程：2000 轮 (2000 * 24 steps = 48000) 从 0.15 收窄至 0.05
@@ -910,6 +920,14 @@ class CurriculumCfg:
     right_cuboid_offset = CurrTerm(
         func=mdp.modify_cuboid_offset,
         params={"command_name": "right_ee_pose", "target_offset": 0.10, "num_steps": 30000},
+    )
+    left_joint_vel_flip = CurrTerm(
+        func=mdp.modify_reward_weight,
+        params={"term_name": "left_joint_vel_flip", "weight": -0.01, "num_steps": 20000},
+    )
+    right_joint_vel_flip = CurrTerm(
+        func=mdp.modify_reward_weight,
+        params={"term_name": "right_joint_vel_flip", "weight": -0.01, "num_steps": 20000},
     )
 
 ##

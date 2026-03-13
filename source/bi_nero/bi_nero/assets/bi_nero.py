@@ -21,7 +21,7 @@ import os
 # The USD asset is located in fairino_description/urdf/fairino5_v6
 # We assume the script is running from the project root or the path is reachable
 # For robustness, we can try to find the project root
-PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../../.."))
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../../../.."))
 NERO_USD_PATH = os.path.join(PROJECT_ROOT, "agx_arm/bi_nero_description/urdf/bi_nero_description/bi_nero_description.usd")
 
 BI_NERO_CFG = ArticulationCfg(
@@ -33,7 +33,7 @@ BI_NERO_CFG = ArticulationCfg(
             max_depenetration_velocity=5.0,
         ),
         articulation_props=sim_utils.ArticulationRootPropertiesCfg(
-            enabled_self_collisions=False,
+            enabled_self_collisions=True,
             solver_position_iteration_count=8,
             solver_velocity_iteration_count=3,
         ),
@@ -75,7 +75,7 @@ BI_NERO_CFG = ArticulationCfg(
 
 BI_NERO_HIGH_PD_CFG = BI_NERO_CFG.copy()
 BI_NERO_HIGH_PD_CFG.spawn.rigid_props.disable_gravity = False
-BI_NERO_HIGH_PD_CFG.actuators["bi_nero_arm"].stiffness = 440.0
-BI_NERO_HIGH_PD_CFG.actuators["bi_nero_arm"].damping = 180.0
+BI_NERO_HIGH_PD_CFG.actuators["bi_nero_arm"].stiffness = 500.0
+BI_NERO_HIGH_PD_CFG.actuators["bi_nero_arm"].damping = 35.0
 """Configuration of Bi-Nero bimanual robot with stiffer PD control."""
 
